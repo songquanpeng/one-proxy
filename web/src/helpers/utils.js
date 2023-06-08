@@ -17,7 +17,7 @@ export function isRoot() {
 
 export function getSystemName() {
   let system_name = localStorage.getItem('system_name');
-  if (!system_name) return '项目模板';
+  if (!system_name) return 'One Proxy';
   return system_name;
 }
 

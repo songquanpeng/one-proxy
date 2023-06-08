@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func OpenBrowser(url string) {
@@ -138,4 +139,8 @@ func Max(a int, b int) int {
 	} else {
 		return b
 	}
+}
+
+func GetTimestamp() int64 {
+	return time.Now().Unix()
 }

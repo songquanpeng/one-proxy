@@ -54,10 +54,10 @@ const Home = () => {
                       <p>
                         源码：
                         <a
-                          href='https://github.com/songquanpeng/gin-template'
+                          href='https://github.com/songquanpeng/one-proxy'
                           target='_blank'
                         >
-                          https://github.com/songquanpeng/gin-template
+                          https://github.com/songquanpeng/one-proxy
                         </a>
                       </p>
                       <p>启动时间：{getStartTimeString()}</p>

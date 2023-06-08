@@ -1,10 +1,10 @@
 package model
 
 import (
-	"gin-template/common"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"one-proxy/common"
 	"os"
 )
 
@@ -52,7 +52,7 @@ func InitDB() (err error) {
 	}
 	if err == nil {
 		DB = db
-		err := db.AutoMigrate(&File{})
+		err := db.AutoMigrate(&Profile{})
 		if err != nil {
 			return err
 		}

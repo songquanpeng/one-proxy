@@ -1,9 +1,9 @@
 package router
 
 import (
-	"gin-template/controller"
-	"gin-template/middleware"
 	"github.com/gin-gonic/gin"
+	"one-proxy/controller"
+	"one-proxy/middleware"
 )
 
 func SetApiRouter(router *gin.Engine) {
@@ -54,13 +54,17 @@ func SetApiRouter(router *gin.Engine) {
 			optionRoute.GET("/", controller.GetOptions)
 			optionRoute.PUT("/", controller.UpdateOption)
 		}
-		fileRoute := apiRouter.Group("/file")
-		fileRoute.Use(middleware.AdminAuth())
+		profileRoute := apiRouter.Group("/profile")
+		router.GET("/profile/:token", controller.GetProfileByToken)
+		profileRoute.Use(middleware.AdminAuth())
 		{
-			fileRoute.GET("/", controller.GetAllFiles)
-			fileRoute.GET("/search", controller.SearchFiles)
-			fileRoute.POST("/", middleware.UploadRateLimit(), controller.UploadFile)
-			fileRoute.DELETE("/:id", controller.DeleteFile)
+			profileRoute.GET("/", controller.GetAllProfiles)
+			profileRoute.GET("/:id", controller.GetProfile)
+			profileRoute.GET("/search", controller.SearchProfiles)
+			profileRoute.GET("/reset/:id", controller.ResetProfile)
+			profileRoute.POST("/", controller.CreateProfile)
+			profileRoute.PUT("/", controller.UpdateProfile)
+			profileRoute.DELETE("/:id", controller.DeleteProfile)
 		}
 	}
 }

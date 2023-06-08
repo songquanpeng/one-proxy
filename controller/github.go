@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"gin-template/common"
-	"gin-template/model"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"one-proxy/common"
+	"one-proxy/model"
 	"strconv"
 	"time"
 )

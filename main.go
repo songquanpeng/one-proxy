@@ -2,16 +2,15 @@ package main
 
 import (
 	"embed"
-	"gin-template/common"
-	"gin-template/middleware"
-	"gin-template/model"
-	"gin-template/router"
-	"github.com/gin-contrib/gzip"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
 	"log"
+	"one-proxy/common"
+	"one-proxy/middleware"
+	"one-proxy/model"
+	"one-proxy/router"
 	"os"
 	"strconv"
 )
@@ -24,7 +23,7 @@ var indexPage []byte
 
 func main() {
 	common.SetupGinLog()
-	common.SysLog("Gin Template " + common.Version + " started")
+	common.SysLog("One Proxy " + common.Version + " started")
 	if os.Getenv("GIN_MODE") != "debug" {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -51,7 +50,6 @@ func main() {
 
 	// Initialize HTTP server
 	server := gin.Default()
-	server.Use(gzip.Gzip(gzip.DefaultCompression))
 	server.Use(middleware.CORS())
 
 	// Initialize session store

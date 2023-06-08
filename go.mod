@@ -1,4 +1,4 @@
-module gin-template
+module one-proxy
 
 // +heroku goVersion go1.18
 go 1.18

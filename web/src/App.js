@@ -15,7 +15,8 @@ import GitHubOAuth from './components/GitHubOAuth';
 import PasswordResetConfirm from './components/PasswordResetConfirm';
 import { UserContext } from './context/User';
 import { StatusContext } from './context/Status';
-import File from './pages/File';
+import Profile from './pages/Profile';
+import EditProfile from './pages/Profile/EditProfile';
 
 const Home = lazy(() => import('./pages/Home'));
 const About = lazy(() => import('./pages/About'));
@@ -36,7 +37,7 @@ function App() {
     const { success, data } = res.data;
     if (success) {
       console.log(
-        `GitHub 仓库地址：https://github.com/songquanpeng/gin-template`
+        `GitHub 仓库地址：https://github.com/songquanpeng/one-proxy`
       );
       localStorage.setItem('status', JSON.stringify(data));
       statusDispatch({ type: 'set', payload: data });
@@ -73,11 +74,27 @@ function App() {
         }
       />
       <Route
-        path='/file'
+        path='/profile'
         element={
           <PrivateRoute>
-            <File />
+            <Profile />
           </PrivateRoute>
+        }
+      />
+      <Route
+        path='/profile/edit/:id'
+        element={
+          <Suspense fallback={<Loading></Loading>}>
+            <EditProfile />
+          </Suspense>
+        }
+      />
+      <Route
+        path='/profile/add'
+        element={
+          <Suspense fallback={<Loading></Loading>}>
+            <EditProfile />
+          </Suspense>
         }
       />
       <Route

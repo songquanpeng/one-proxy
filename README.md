@@ -1,81 +1,67 @@
-<p align="right">
-   <strong>中文</strong> | <a href="./README.en.md">English</a>
-</p>
-
 <p align="center">
-  <a href="https://github.com/songquanpeng/gin-template"><img src="https://raw.githubusercontent.com/songquanpeng/gin-template/main/web/public/logo.png" width="150" height="150" alt="gin-template logo"></a>
+  <a href="https://github.com/songquanpeng/one-proxy"><img src="https://raw.githubusercontent.com/songquanpeng/one-proxy/main/web/public/logo.png" width="150" height="150" alt="one-proxy logo"></a>
 </p>
 
 <div align="center">
 
-# Gin 项目模板
+# One Proxy
 
-_✨ 用于 Gin & React 项目的模板 ✨_
+_✨ 轻松管理你的众多订阅，提供一个固定的订阅地址 ✨_
 
 </div>
 
 <p align="center">
-  <a href="https://raw.githubusercontent.com/songquanpeng/gin-template/main/LICENSE">
-    <img src="https://img.shields.io/github/license/songquanpeng/gin-template?color=brightgreen" alt="license">
+  <a href="https://raw.githubusercontent.com/songquanpeng/one-proxy/main/LICENSE">
+    <img src="https://img.shields.io/github/license/songquanpeng/one-proxy?color=brightgreen" alt="license">
   </a>
-  <a href="https://github.com/songquanpeng/gin-template/releases/latest">
-    <img src="https://img.shields.io/github/v/release/songquanpeng/gin-template?color=brightgreen&include_prereleases" alt="release">
+  <a href="https://github.com/songquanpeng/one-proxy/releases/latest">
+    <img src="https://img.shields.io/github/v/release/songquanpeng/one-proxy?color=brightgreen&include_prereleases" alt="release">
   </a>
-  <a href="https://hub.docker.com/repository/docker/justsong/gin-template">
-    <img src="https://img.shields.io/docker/pulls/justsong/gin-template?color=brightgreen" alt="docker pull">
+  <a href="https://hub.docker.com/repository/docker/justsong/one-proxy">
+    <img src="https://img.shields.io/docker/pulls/justsong/one-proxy?color=brightgreen" alt="docker pull">
   </a>
-  <a href="https://github.com/songquanpeng/gin-template/releases/latest">
-    <img src="https://img.shields.io/github/downloads/songquanpeng/gin-template/total?color=brightgreen&include_prereleases" alt="release">
+  <a href="https://github.com/songquanpeng/one-proxy/releases/latest">
+    <img src="https://img.shields.io/github/downloads/songquanpeng/one-proxy/total?color=brightgreen&include_prereleases" alt="release">
   </a>
-  <a href="https://goreportcard.com/report/github.com/songquanpeng/gin-template">
-    <img src="https://goreportcard.com/badge/github.com/songquanpeng/gin-template" alt="GoReportCard">
+  <a href="https://goreportcard.com/report/github.com/songquanpeng/one-proxy">
+    <img src="https://goreportcard.com/badge/github.com/songquanpeng/one-proxy" alt="GoReportCard">
   </a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/songquanpeng/gin-template/releases">程序下载</a>
+  <a href="https://github.com/songquanpeng/one-proxy/releases">程序下载</a>
   ·
-  <a href="https://github.com/songquanpeng/gin-template#部署">部署教程</a>
+  <a href="https://github.com/songquanpeng/one-proxy#部署">部署教程</a>
   ·
-  <a href="https://github.com/songquanpeng/gin-template/issues">意见反馈</a>
+  <a href="https://github.com/songquanpeng/one-proxy/issues">意见反馈</a>
   ·
-  <a href="https://gin-template.vercel.app/">在线演示</a>
+  <a href="https://one-proxy.vercel.app/">在线演示</a>
 </p>
 
 ## 功能
-+ [x] 内置用户管理
-+ [x] 内置文件管理
-+ [x] [GitHub 开放授权](https://github.com/settings/applications/new)
-+ [x] 微信公众号授权（需要 [wechat-server](https://github.com/songquanpeng/wechat-server)）
-+ [x] 邮箱验证以及通过邮件进行密码重置
-+ [x] 请求频率限制
-+ [x] 静态文件缓存
-+ [x] 移动端适配
-+ [x] 基于令牌的鉴权
-+ [x] 使用 GitHub Actions 自动打包可执行文件与 Docker 镜像
-+ [x] Cloudflare Turnstile 用户校验
+为你的众多订阅地址提供一个固定的更新链接，方便你在各个设备上使用，避免切换订阅时要修改一众设备上的配置。
 
 ## 部署
 ### 基于 Docker 进行部署
-执行：`docker run -d --restart always -p 3000:3000 -v /home/ubuntu/data/gin-template:/data justsong/gin-template`
+执行：`docker run -d --restart always -p 3000:3000 -v /home/ubuntu/data/one-proxy:/data justsong/one-proxy`
 
-数据将会保存在宿主机的 `/home/ubuntu/data/gin-template` 目录。
+数据将会保存在宿主机的 `/home/ubuntu/data/one-proxy` 目录。
 
 ### 手动部署
-1. 从 [GitHub Releases](https://github.com/songquanpeng/gin-template/releases/latest) 下载可执行文件或者从源码编译：
+1. 从 [GitHub Releases](https://github.com/songquanpeng/one-proxy/releases/latest) 下载可执行文件或者从源码编译：
    ```shell
-   git clone https://github.com/songquanpeng/gin-template.git
-   cd gin-template/web
+   git clone https://github.com/songquanpeng/one-proxy.git
+   cd one-proxy/web
    npm install
    npm run build
    cd ..
    go mod download
-   go build -ldflags "-s -w" -o gin-template
+   go build -ldflags "-s -w" -o one-proxy
    ````
 2. 运行：
    ```shell
-   chmod u+x gin-template
-   ./gin-template --port 3000 --log-dir ./logs
+   chmod u+x one-proxy
+   ./one-proxy --port 3000 --log-dir ./logs
    ```
 3. 访问 [http://localhost:3000/](http://localhost:3000/) 并登录。初始账号用户名为 `root`，密码为 `123456`。
 
@@ -94,7 +80,7 @@ _✨ 用于 Gin & React 项目的模板 ✨_
 2. `SESSION_SECRET`：设置之后将使用固定的会话密钥，这样系统重新启动后已登录用户的 cookie 将依旧有效。
    + 例子：`SESSION_SECRET=random_string`
 3. `SQL_DSN`：设置之后将使用指定数据库而非 SQLite。
-   + 例子：`SQL_DSN=root:123456@tcp(localhost:3306)/gin-template`
+   + 例子：`SQL_DSN=root:123456@tcp(localhost:3306)/one-proxy`
 
 ### 命令行参数
 1. `--port <port_number>`: 指定服务器监听的端口号，默认为 `3000`。

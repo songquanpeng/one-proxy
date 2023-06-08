@@ -18,7 +18,7 @@ const Footer = () => {
         ) : (
           <div className='custom-footer'>
             <a
-              href='https://github.com/songquanpeng/gin-template'
+              href='https://github.com/songquanpeng/one-proxy'
               target='_blank'
             >
               {systemName} {process.env.REACT_APP_VERSION}{' '}

@@ -21,9 +21,9 @@ const headerButtons = [
     icon: 'home',
   },
   {
-    name: '文件',
-    to: '/file',
-    icon: 'file',
+    name: '订阅',
+    to: '/profile',
+    icon: 'sitemap',
     admin: true,
   },
   {
