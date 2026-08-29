@@ -2,27 +2,40 @@ package model
 
 import (
 	"errors"
+	"gorm.io/gorm"
 )
 
 type Profile struct {
-	Id          int    `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Status      int    `json:"status" gorm:"default:1"`
-	Token       string `json:"token" gorm:"type:char(32);uniqueIndex"`
-	CreatedTime int64  `json:"created_time" gorm:"bigint"`
-	URL         string `json:"url"`
+	Id                     int    `json:"id"`
+	Name                   string `json:"name"`
+	Description            string `json:"description"`
+	Status                 int    `json:"status" gorm:"default:1"`
+	Token                  string `json:"token" gorm:"type:char(32);uniqueIndex"`
+	CreatedTime            int64  `json:"created_time" gorm:"bigint"`
+	URL                    string `json:"url"`
+	FetchMode              string `json:"fetch_mode" gorm:"type:varchar(16);default:cache"`
+	RefreshIntervalMinutes int    `json:"refresh_interval_minutes" gorm:"default:60"`
+	LastFetchTime          int64  `json:"last_fetch_time" gorm:"bigint"`
+	LastFetchError         string `json:"last_fetch_error" gorm:"type:text"`
 }
 
 const (
 	ProfileStatusEnabled  = 1
 	ProfileStatusDisabled = 2
+	ProfileFetchModeCache = "cache"
+	ProfileFetchModeProxy = "proxy"
 )
 
 func GetAllProfiles(startIdx int, num int) ([]*Profile, error) {
 	var profiles []*Profile
 	var err error
 	err = DB.Order("id desc").Limit(num).Offset(startIdx).Find(&profiles).Error
+	return profiles, err
+}
+
+func GetEnabledCachedProfiles() ([]*Profile, error) {
+	var profiles []*Profile
+	err := DB.Where("status = ? AND fetch_mode = ?", ProfileStatusEnabled, ProfileFetchModeCache).Find(&profiles).Error
 	return profiles, err
 }
 
@@ -52,20 +65,55 @@ func GetProfileByToken(token string) (*Profile, error) {
 }
 
 func (profile *Profile) Insert() error {
-	var err error
-	err = DB.Create(profile).Error
-	return err
+	refreshDisabled := profile.RefreshIntervalMinutes == 0
+	return DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(profile).Error; err != nil {
+			return err
+		}
+		// GORM applies the database default to an integer zero value. Zero is a
+		// meaningful setting here (disable scheduled refresh), so persist it.
+		if refreshDisabled {
+			profile.RefreshIntervalMinutes = 0
+			return tx.Model(profile).Update("refresh_interval_minutes", 0).Error
+		}
+		return nil
+	})
 }
 
-func (profile *Profile) Update() error {
-	var err error
-	err = DB.Model(profile).Updates(profile).Error
-	return err
+func (profile *Profile) UpdateEditableFields() error {
+	return DB.Model(&Profile{}).Where("id = ?", profile.Id).Updates(map[string]interface{}{
+		"name":                     profile.Name,
+		"description":              profile.Description,
+		"url":                      profile.URL,
+		"fetch_mode":               profile.FetchMode,
+		"refresh_interval_minutes": profile.RefreshIntervalMinutes,
+	}).Error
 }
 
-// Delete Make sure link is valid! Because we will use os.Remove to delete it!
+func UpdateProfileStatus(id int, status int) error {
+	return DB.Model(&Profile{}).Where("id = ?", id).Update("status", status).Error
+}
+
+func UpdateProfileToken(id int, token string) error {
+	return DB.Model(&Profile{}).Where("id = ?", id).Update("token", token).Error
+}
+
+func UpdateProfileFetchResult(id int, fetchedAt int64, fetchError string) error {
+	return DB.Model(&Profile{}).Where("id = ?", id).Updates(map[string]interface{}{
+		"last_fetch_time":  fetchedAt,
+		"last_fetch_error": fetchError,
+	}).Error
+}
+
+func UpdateProfileFetchError(id int, fetchError string) error {
+	return DB.Model(&Profile{}).Where("id = ?", id).Update("last_fetch_error", fetchError).Error
+}
+
 func (profile *Profile) Delete() error {
-	var err error
-	err = DB.Delete(profile).Error
-	return err
+	return DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("profile_id = ?", profile.Id).Delete(&ProfileCache{}).Error; err != nil {
+			return err
+		}
+		return tx.Delete(profile).Error
+	})
 }

@@ -59,9 +59,10 @@ func SetApiRouter(router *gin.Engine) {
 		profileRoute.Use(middleware.AdminAuth())
 		{
 			profileRoute.GET("/", controller.GetAllProfiles)
-			profileRoute.GET("/:id", controller.GetProfile)
 			profileRoute.GET("/search", controller.SearchProfiles)
 			profileRoute.GET("/reset/:id", controller.ResetProfile)
+			profileRoute.POST("/refresh/:id", controller.RefreshProfile)
+			profileRoute.GET("/:id", controller.GetProfile)
 			profileRoute.POST("/", controller.CreateProfile)
 			profileRoute.PUT("/", controller.UpdateProfile)
 			profileRoute.DELETE("/:id", controller.DeleteProfile)

@@ -64,6 +64,9 @@ const ProfilesTable = () => {
       case 'reset':
         res = await API.get(`/api/profile/reset/${id}`);
         break;
+      case 'refresh':
+        res = await API.post(`/api/profile/refresh/${id}`);
+        break;
       case 'enable':
       case 'disable':
         res = await API.put(`/api/profile?status_only=true`, {
@@ -71,6 +74,9 @@ const ProfilesTable = () => {
           status: action === 'enable' ? 1 : 2
         });
         break;
+      default:
+        showError('未知操作');
+        return;
     }
     const { success, message, data } = res.data;
     if (success) {
@@ -84,6 +90,9 @@ const ProfilesTable = () => {
         case 'delete':
           newProfiles[realIdx].deleted = true;
           break;
+        case 'refresh':
+          await loadProfiles(0);
+          return;
         default:
           newProfiles[realIdx].status = action === 'enable' ? 1 : 2;
           break;
@@ -111,6 +120,29 @@ const ProfilesTable = () => {
           </Label>
         );
     }
+  };
+
+  const renderCacheStatus = (profile) => {
+    if (profile.fetch_mode === 'proxy') {
+      return <Label basic>实时代理</Label>;
+    }
+    if (profile.last_fetch_error) {
+      return (
+        <Popup
+          content={profile.last_fetch_error}
+          trigger={<Label basic color='orange'>刷新异常</Label>}
+        />
+      );
+    }
+    if (profile.last_fetch_time) {
+      return (
+        <Popup
+          content={timestamp2string(profile.last_fetch_time)}
+          trigger={<Label basic color='green'>缓存可用</Label>}
+        />
+      );
+    }
+    return <Label basic color='grey'>尚无缓存</Label>;
   };
 
   const searchProfiles = async () => {
@@ -199,6 +231,7 @@ const ProfilesTable = () => {
             >
               状态
             </Table.HeaderCell>
+            <Table.HeaderCell>中转方式</Table.HeaderCell>
             <Table.HeaderCell>操作</Table.HeaderCell>
           </Table.Row>
         </Table.Header>
@@ -217,6 +250,7 @@ const ProfilesTable = () => {
                   <Table.Cell>{profile.description ? profile.description : "无描述信息"}</Table.Cell>
                   <Table.Cell>{renderTimestamp(profile.created_time)}</Table.Cell>
                   <Table.Cell>{renderStatus(profile.status)}</Table.Cell>
+                  <Table.Cell>{renderCacheStatus(profile)}</Table.Cell>
                   <Table.Cell>
                     <div>
                       <Button
@@ -243,6 +277,17 @@ const ProfilesTable = () => {
                       >
                         重置
                       </Button>
+                      {profile.fetch_mode !== 'proxy' && (
+                        <Button
+                          size='small'
+                          color='blue'
+                          onClick={() => {
+                            manageProfile(profile.id, 'refresh', idx).then();
+                          }}
+                        >
+                          刷新缓存
+                        </Button>
+                      )}
                       <Popup
                         trigger={
                           <Button size='small' negative>
@@ -290,7 +335,7 @@ const ProfilesTable = () => {
 
         <Table.Footer>
           <Table.Row>
-            <Table.HeaderCell colSpan='6'>
+            <Table.HeaderCell colSpan='7'>
               <Button size='small' as={Link} to='/profile/add' loading={loading}>
                 添加新的订阅
               </Button>

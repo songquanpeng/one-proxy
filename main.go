@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -11,6 +12,7 @@ import (
 	"one-proxy/middleware"
 	"one-proxy/model"
 	"one-proxy/router"
+	"one-proxy/subscription"
 	"os"
 	"strconv"
 )
@@ -22,6 +24,7 @@ var buildFS embed.FS
 var indexPage []byte
 
 func main() {
+	common.ParseCommandLine()
 	common.SetupGinLog()
 	common.SysLog("One Proxy " + common.Version + " started")
 	if os.Getenv("GIN_MODE") != "debug" {
@@ -47,6 +50,7 @@ func main() {
 
 	// Initialize options
 	model.InitOptionMap()
+	subscription.StartRefresher(context.Background())
 
 	// Initialize HTTP server
 	server := gin.Default()

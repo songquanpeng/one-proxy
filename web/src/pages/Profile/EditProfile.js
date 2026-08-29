@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Form, Header, Segment } from 'semantic-ui-react';
 import { useParams } from 'react-router-dom';
-import { API, showError, showSuccess } from '../../helpers';
+import { API, showError, showSuccess, showWarning } from '../../helpers';
 
 const EditProfile = () => {
   const params = useParams();
@@ -11,10 +11,12 @@ const EditProfile = () => {
   const originInputs = {
     name: '',
     description: '',
-    url: ''
+    url: '',
+    fetch_mode: 'cache',
+    refresh_interval_minutes: 60
   };
   const [inputs, setInputs] = useState(originInputs);
-  const { name, description, url } = inputs;
+  const { name, description, url, fetch_mode, refresh_interval_minutes } = inputs;
   const handleInputChange = (e, { name, value }) => {
     setInputs((inputs) => ({ ...inputs, [name]: value }));
   };
@@ -46,6 +48,9 @@ const EditProfile = () => {
     const { success, message } = res.data;
     if (success) {
       showSuccess('订阅更新成功！');
+      if (message) {
+        showWarning(`配置已保存，但首次刷新失败：${message}`);
+      }
     } else {
       showError(message);
     }
@@ -84,6 +89,44 @@ const EditProfile = () => {
               value={url}
             />
           </Form.Field>
+          <Form.Field>
+            <Form.Select
+              label='访问模式'
+              name='fetch_mode'
+              options={[
+                {
+                  key: 'cache',
+                  text: '缓存中转（推荐）',
+                  value: 'cache'
+                },
+                {
+                  key: 'proxy',
+                  text: '实时代理（每次请求源站）',
+                  value: 'proxy'
+                }
+              ]}
+              onChange={handleInputChange}
+              value={fetch_mode}
+            />
+          </Form.Field>
+          {fetch_mode === 'cache' && (
+            <Form.Field>
+              <Form.Input
+                label='自动刷新间隔（分钟，0 表示关闭）'
+                name='refresh_interval_minutes'
+                type='number'
+                min='0'
+                placeholder='60'
+                onChange={(e, { name, value }) => {
+                  setInputs((inputs) => ({
+                    ...inputs,
+                    [name]: parseInt(value || '0')
+                  }));
+                }}
+                value={refresh_interval_minutes}
+              />
+            </Form.Field>
+          )}
           <Button onClick={submit}>提交</Button>
         </Form>
       </Segment>
