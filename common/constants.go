@@ -18,6 +18,8 @@ var HomePageLink = ""
 var SessionSecret = uuid.New().String()
 var SQLitePath = "one-proxy.db"
 
+const SessionMaxAge = 365 * 24 * 60 * 60
+
 var OptionMap map[string]string
 var OptionMapRWMutex sync.RWMutex
 

@@ -21,6 +21,32 @@ var buildFS embed.FS
 //go:embed web/build/index.html
 var indexPage []byte
 
+type cookieMaxAgeStore interface {
+	MaxAge(int)
+}
+
+type redisMaxAgeStore interface {
+	SetMaxAge(int)
+}
+
+func configureSessionStore(store sessions.Store) {
+	store.Options(sessions.Options{
+		Path:     "/",
+		MaxAge:   common.SessionMaxAge,
+		HttpOnly: true,
+	})
+
+	// Both stores also apply MaxAge to their secure-cookie codecs. Updating
+	// only the browser cookie would leave the codec's shorter default expiry in
+	// place and reject otherwise-valid sessions early.
+	if cookieStore, ok := store.(cookieMaxAgeStore); ok {
+		cookieStore.MaxAge(common.SessionMaxAge)
+	}
+	if redisStore, ok := store.(redisMaxAgeStore); ok {
+		redisStore.SetMaxAge(common.SessionMaxAge)
+	}
+}
+
 func main() {
 	common.ParseCommandLine()
 	common.SetupGinLog()
@@ -31,6 +57,9 @@ func main() {
 	// Initialize SQL Database
 	err := model.InitDB()
 	if err != nil {
+		common.FatalLog(err)
+	}
+	if err = model.InitSessionSecret(); err != nil {
 		common.FatalLog(err)
 	}
 	defer func() {
@@ -56,10 +85,15 @@ func main() {
 	// Initialize session store
 	if common.RedisEnabled {
 		opt := common.ParseRedisOption()
-		store, _ := redis.NewStore(opt.MinIdleConns, opt.Network, opt.Addr, opt.Password, []byte(common.SessionSecret))
+		store, storeErr := redis.NewStore(opt.MinIdleConns, opt.Network, opt.Addr, opt.Password, []byte(common.SessionSecret))
+		if storeErr != nil {
+			common.FatalLog(storeErr)
+		}
+		configureSessionStore(store)
 		server.Use(sessions.Sessions("session", store))
 	} else {
 		store := cookie.NewStore([]byte(common.SessionSecret))
+		configureSessionStore(store)
 		server.Use(sessions.Sessions("session", store))
 	}
 

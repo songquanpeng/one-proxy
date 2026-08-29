@@ -2,13 +2,45 @@ package model
 
 import (
 	"one-proxy/common"
+	"os"
 	"strconv"
 	"strings"
 )
 
+const sessionSecretOptionKey = "SessionSecret"
+
 type Option struct {
 	Key   string `json:"key" gorm:"primaryKey"`
 	Value string `json:"value"`
+}
+
+// InitSessionSecret loads the session signing key from the environment or the
+// database. Persisting an automatically generated key keeps existing sessions
+// valid when the application restarts.
+func InitSessionSecret() error {
+	if secret := os.Getenv("SESSION_SECRET"); secret != "" {
+		common.SessionSecret = secret
+		return nil
+	}
+
+	option := Option{Key: sessionSecretOptionKey}
+	result := DB.Where("key = ?", sessionSecretOptionKey).
+		Attrs(Option{Value: common.SessionSecret}).
+		FirstOrCreate(&option)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	// Recover from an accidentally-created empty value instead of signing
+	// sessions with an empty key.
+	if option.Value == "" {
+		option.Value = common.SessionSecret
+		if err := DB.Save(&option).Error; err != nil {
+			return err
+		}
+	}
+	common.SessionSecret = option.Value
+	return nil
 }
 
 func AllOption() ([]*Option, error) {

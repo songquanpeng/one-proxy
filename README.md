@@ -77,7 +77,7 @@ _✨ 轻松管理你的众多订阅，提供一个固定的订阅地址 ✨_
 ### 环境变量
 1. `REDIS_CONN_STRING`：设置之后将使用 Redis 作为请求频率限制的存储，而非使用内存存储。
    + 例子：`REDIS_CONN_STRING=redis://default:redispw@localhost:49153`
-2. `SESSION_SECRET`：设置之后将使用固定的会话密钥，这样系统重新启动后已登录用户的 cookie 将依旧有效。
+2. `SESSION_SECRET`：可选。系统默认会把自动生成的会话密钥保存到数据库，重启后登录态仍然有效；设置此变量可显式指定固定密钥（推荐多实例部署时使用）。
    + 例子：`SESSION_SECRET=random_string`
 3. `SQL_DSN`：设置之后将使用指定数据库而非 SQLite。
    + 例子：`SQL_DSN=root:123456@tcp(localhost:3306)/one-proxy`
