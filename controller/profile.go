@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"one-proxy/common"
@@ -86,15 +87,22 @@ func GetProfileByToken(c *gin.Context) {
 	}
 	var cache *model.ProfileCache
 	if profile.FetchMode == model.ProfileFetchModeProxy {
-		cache, err = subscription.DefaultService.FetchDirect(c.Request.Context(), profile, c.GetHeader("User-Agent"))
+		cache, err = subscription.DefaultService.FetchDirect(c.Request.Context(), profile, c.Request.Header)
 		if err != nil {
 			c.JSON(http.StatusBadGateway, gin.H{"success": false, "message": err.Error()})
 			return
 		}
 	} else {
-		cache, err = subscription.DefaultService.Cached(profile.Id, c.GetHeader("User-Agent"))
+		cache, err = subscription.DefaultService.FetchAndCache(c.Request.Context(), profile, c.Request.Header)
 		if err != nil {
-			cache, err = subscription.DefaultService.FetchAndCache(c.Request.Context(), profile, c.GetHeader("User-Agent"))
+			fetchErr := err
+			cache, err = subscription.DefaultService.Cached(profile.Id, c.GetHeader("User-Agent"))
+			if err == nil {
+				c.Header("X-One-Proxy-Stale", "true")
+				c.Header("Warning", `110 one-proxy "Response is stale"`)
+			} else {
+				err = fetchErr
+			}
 		}
 		if err != nil {
 			c.JSON(http.StatusBadGateway, gin.H{
@@ -109,6 +117,16 @@ func GetProfileByToken(c *gin.Context) {
 }
 
 func writeCachedSubscription(c *gin.Context, cache *model.ProfileCache) {
+	if cache.ResponseHeaders != "" {
+		var headers http.Header
+		if json.Unmarshal([]byte(cache.ResponseHeaders), &headers) == nil {
+			for name, values := range headers {
+				for _, value := range values {
+					c.Writer.Header().Add(name, value)
+				}
+			}
+		}
+	}
 	if cache.ContentDisposition != "" {
 		c.Header("Content-Disposition", cache.ContentDisposition)
 	}
@@ -158,15 +176,9 @@ func CreateProfile(c *gin.Context) {
 		})
 		return
 	}
-	refreshWarning := ""
-	if profile.FetchMode == model.ProfileFetchModeCache {
-		if refreshErr := subscription.DefaultService.Refresh(c.Request.Context(), &profile); refreshErr != nil {
-			refreshWarning = refreshErr.Error()
-		}
-	}
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"message": refreshWarning,
+		"message": "",
 	})
 	return
 }
@@ -201,15 +213,9 @@ func UpdateProfile(c *gin.Context) {
 		})
 		return
 	}
-	refreshWarning := ""
-	if c.Query("status_only") != "true" && profile.FetchMode == model.ProfileFetchModeCache {
-		if refreshErr := subscription.DefaultService.Refresh(c.Request.Context(), &profile); refreshErr != nil {
-			refreshWarning = refreshErr.Error()
-		}
-	}
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"message": refreshWarning,
+		"message": "",
 	})
 	return
 }
@@ -257,18 +263,4 @@ func ResetProfile(c *gin.Context) {
 		"data":    profile.Token,
 	})
 	return
-}
-
-func RefreshProfile(c *gin.Context) {
-	id, _ := strconv.Atoi(c.Param("id"))
-	profile, err := model.GetProfileById(id)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": err.Error()})
-		return
-	}
-	if err = subscription.DefaultService.Refresh(c.Request.Context(), profile); err != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": ""})
 }

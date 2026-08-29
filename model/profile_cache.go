@@ -13,6 +13,7 @@ type ProfileCache struct {
 	ProfileUpdateInterval string `json:"profile_update_interval"`
 	ProfileWebPageURL     string `json:"profile_web_page_url"`
 	SupportURL            string `json:"support_url"`
+	ResponseHeaders       string `json:"-" gorm:"type:text"`
 	ETag                  string `json:"etag"`
 	FetchedTime           int64  `json:"fetched_time" gorm:"bigint"`
 }
@@ -20,7 +21,7 @@ type ProfileCache struct {
 func UpsertProfileCache(cache *ProfileCache) error {
 	return DB.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "profile_id"}, {Name: "variant"}},
-		DoUpdates: clause.AssignmentColumns([]string{"content", "content_type", "content_disposition", "subscription_userinfo", "profile_update_interval", "profile_web_page_url", "support_url", "e_tag", "fetched_time"}),
+		DoUpdates: clause.AssignmentColumns([]string{"content", "content_type", "content_disposition", "subscription_userinfo", "profile_update_interval", "profile_web_page_url", "support_url", "response_headers", "e_tag", "fetched_time"}),
 	}).Create(cache).Error
 }
 

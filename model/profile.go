@@ -6,17 +6,16 @@ import (
 )
 
 type Profile struct {
-	Id                     int    `json:"id"`
-	Name                   string `json:"name"`
-	Description            string `json:"description"`
-	Status                 int    `json:"status" gorm:"default:1"`
-	Token                  string `json:"token" gorm:"type:char(32);uniqueIndex"`
-	CreatedTime            int64  `json:"created_time" gorm:"bigint"`
-	URL                    string `json:"url"`
-	FetchMode              string `json:"fetch_mode" gorm:"type:varchar(16);default:cache"`
-	RefreshIntervalMinutes int    `json:"refresh_interval_minutes" gorm:"default:60"`
-	LastFetchTime          int64  `json:"last_fetch_time" gorm:"bigint"`
-	LastFetchError         string `json:"last_fetch_error" gorm:"type:text"`
+	Id             int    `json:"id"`
+	Name           string `json:"name"`
+	Description    string `json:"description"`
+	Status         int    `json:"status" gorm:"default:1"`
+	Token          string `json:"token" gorm:"type:char(32);uniqueIndex"`
+	CreatedTime    int64  `json:"created_time" gorm:"bigint"`
+	URL            string `json:"url"`
+	FetchMode      string `json:"fetch_mode" gorm:"type:varchar(16);default:cache"`
+	LastFetchTime  int64  `json:"last_fetch_time" gorm:"bigint"`
+	LastFetchError string `json:"last_fetch_error" gorm:"type:text"`
 }
 
 const (
@@ -30,12 +29,6 @@ func GetAllProfiles(startIdx int, num int) ([]*Profile, error) {
 	var profiles []*Profile
 	var err error
 	err = DB.Order("id desc").Limit(num).Offset(startIdx).Find(&profiles).Error
-	return profiles, err
-}
-
-func GetEnabledCachedProfiles() ([]*Profile, error) {
-	var profiles []*Profile
-	err := DB.Where("status = ? AND fetch_mode = ?", ProfileStatusEnabled, ProfileFetchModeCache).Find(&profiles).Error
 	return profiles, err
 }
 
@@ -65,28 +58,15 @@ func GetProfileByToken(token string) (*Profile, error) {
 }
 
 func (profile *Profile) Insert() error {
-	refreshDisabled := profile.RefreshIntervalMinutes == 0
-	return DB.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Create(profile).Error; err != nil {
-			return err
-		}
-		// GORM applies the database default to an integer zero value. Zero is a
-		// meaningful setting here (disable scheduled refresh), so persist it.
-		if refreshDisabled {
-			profile.RefreshIntervalMinutes = 0
-			return tx.Model(profile).Update("refresh_interval_minutes", 0).Error
-		}
-		return nil
-	})
+	return DB.Create(profile).Error
 }
 
 func (profile *Profile) UpdateEditableFields() error {
 	return DB.Model(&Profile{}).Where("id = ?", profile.Id).Updates(map[string]interface{}{
-		"name":                     profile.Name,
-		"description":              profile.Description,
-		"url":                      profile.URL,
-		"fetch_mode":               profile.FetchMode,
-		"refresh_interval_minutes": profile.RefreshIntervalMinutes,
+		"name":        profile.Name,
+		"description": profile.Description,
+		"url":         profile.URL,
+		"fetch_mode":  profile.FetchMode,
 	}).Error
 }
 

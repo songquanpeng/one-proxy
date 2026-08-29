@@ -64,9 +64,6 @@ const ProfilesTable = () => {
       case 'reset':
         res = await API.get(`/api/profile/reset/${id}`);
         break;
-      case 'refresh':
-        res = await API.post(`/api/profile/refresh/${id}`);
-        break;
       case 'enable':
       case 'disable':
         res = await API.put(`/api/profile?status_only=true`, {
@@ -90,9 +87,6 @@ const ProfilesTable = () => {
         case 'delete':
           newProfiles[realIdx].deleted = true;
           break;
-        case 'refresh':
-          await loadProfiles(0);
-          return;
         default:
           newProfiles[realIdx].status = action === 'enable' ? 1 : 2;
           break;
@@ -130,7 +124,7 @@ const ProfilesTable = () => {
       return (
         <Popup
           content={profile.last_fetch_error}
-          trigger={<Label basic color='orange'>刷新异常</Label>}
+          trigger={<Label basic color='orange'>上次回源异常</Label>}
         />
       );
     }
@@ -277,17 +271,6 @@ const ProfilesTable = () => {
                       >
                         重置
                       </Button>
-                      {profile.fetch_mode !== 'proxy' && (
-                        <Button
-                          size='small'
-                          color='blue'
-                          onClick={() => {
-                            manageProfile(profile.id, 'refresh', idx).then();
-                          }}
-                        >
-                          刷新缓存
-                        </Button>
-                      )}
                       <Popup
                         trigger={
                           <Button size='small' negative>

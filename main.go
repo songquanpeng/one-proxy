@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"embed"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -12,7 +11,6 @@ import (
 	"one-proxy/middleware"
 	"one-proxy/model"
 	"one-proxy/router"
-	"one-proxy/subscription"
 	"os"
 	"strconv"
 )
@@ -50,7 +48,6 @@ func main() {
 
 	// Initialize options
 	model.InitOptionMap()
-	subscription.StartRefresher(context.Background())
 
 	// Initialize HTTP server
 	server := gin.Default()

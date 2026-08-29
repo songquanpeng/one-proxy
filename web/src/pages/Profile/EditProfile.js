@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Form, Header, Segment } from 'semantic-ui-react';
 import { useParams } from 'react-router-dom';
-import { API, showError, showSuccess, showWarning } from '../../helpers';
+import { API, showError, showSuccess } from '../../helpers';
 
 const EditProfile = () => {
   const params = useParams();
@@ -12,11 +12,10 @@ const EditProfile = () => {
     name: '',
     description: '',
     url: '',
-    fetch_mode: 'cache',
-    refresh_interval_minutes: 60
+    fetch_mode: 'cache'
   };
   const [inputs, setInputs] = useState(originInputs);
-  const { name, description, url, fetch_mode, refresh_interval_minutes } = inputs;
+  const { name, description, url, fetch_mode } = inputs;
   const handleInputChange = (e, { name, value }) => {
     setInputs((inputs) => ({ ...inputs, [name]: value }));
   };
@@ -48,9 +47,6 @@ const EditProfile = () => {
     const { success, message } = res.data;
     if (success) {
       showSuccess('订阅更新成功！');
-      if (message) {
-        showWarning(`配置已保存，但首次刷新失败：${message}`);
-      }
     } else {
       showError(message);
     }
@@ -96,7 +92,7 @@ const EditProfile = () => {
               options={[
                 {
                   key: 'cache',
-                  text: '缓存中转（推荐）',
+                  text: '客户端触发缓存（推荐）',
                   value: 'cache'
                 },
                 {
@@ -109,24 +105,6 @@ const EditProfile = () => {
               value={fetch_mode}
             />
           </Form.Field>
-          {fetch_mode === 'cache' && (
-            <Form.Field>
-              <Form.Input
-                label='自动刷新间隔（分钟，0 表示关闭）'
-                name='refresh_interval_minutes'
-                type='number'
-                min='0'
-                placeholder='60'
-                onChange={(e, { name, value }) => {
-                  setInputs((inputs) => ({
-                    ...inputs,
-                    [name]: parseInt(value || '0')
-                  }));
-                }}
-                value={refresh_interval_minutes}
-              />
-            </Form.Field>
-          )}
           <Button onClick={submit}>提交</Button>
         </Form>
       </Segment>
